@@ -42,31 +42,31 @@ static void obd_callback(struct can_frame * frame)
 
     if(frame->can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
     {
-        double fl = 0;
-        double fr = 0;
-        double rl = 0;
+        double lf = 0;
+        double rf = 0;
+        double lr = 0;
         double rr = 0;
 
-        (void)get_wheel_speed_front_left(frame, &fl);
-        (void)get_wheel_speed_front_right(frame, &fr);
-        (void)get_wheel_speed_rear_left(frame, &rl);
-        (void)get_wheel_speed_rear_right(frame, &rr);
+        (void)get_wheel_speed_left_front(frame, &lf);
+        (void)get_wheel_speed_right_front(frame, &rf);
+        (void)get_wheel_speed_left_rear(frame, &lr);
+        (void)get_wheel_speed_right_rear(frame, &rr);
 
         // RR
-        printf("\n RR: %f \n", fl);
+        printf("\n RR: %f \n", rr);
 
         // LR
-        printf("\n\t\t LR: %f \n", fr);
+        printf("\n\t\t LR: %f \n", lr);
 
         // RF
-        printf("\n\t\t\t\t RF: %f \n", rl);
+        printf("\n\t\t\t\t RF: %f \n", rf);
 
         // LF
-        printf("\n\t\t\t\t\t\t LF: %f \n", rr);
+        printf("\n\t\t\t\t\t\t LF: %f \n", lf);
 
         if(GLOBAL_FILE_POINTER != NULL)
         {
-            fprintf(GLOBAL_FILE_POINTER, "%llu,%f,%f,%f,%f,", timestamp, fl, fr, rl, rr);
+            fprintf(GLOBAL_FILE_POINTER, "%llu,%f,%f,%f,%f,", timestamp, rr, lr, rf, lf);
         }
     }
 
