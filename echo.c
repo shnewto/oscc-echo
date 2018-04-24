@@ -1,3 +1,9 @@
+#include <time.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <bits/time.h>
+#include <sys/timeb.h>
+
 #include <stdio.h> // printf
 #include <signal.h> // SIGINT
 #include <unistd.h> // usleep
@@ -6,6 +12,7 @@
 
 // Global indication of Ctrl+C.
 static int EXIT_SIGNALED = OSCC_OK;
+static FILE * GLOBAL_FILE_POINTER = NULL;
 
 // Help exiting gracefully.
 void signal_handler(int signal_number)
@@ -16,29 +23,59 @@ void signal_handler(int signal_number)
     }
 }
 
+unsigned long long get_timestamp()
+{
+    unsigned long long timestamp;
+    struct timespec timespec;
+    clock_gettime( CLOCK_REALTIME, &timespec );
+    // to micro seconds
+    timestamp = (unsigned long long)timespec.tv_sec * 1000000ULL;
+    // remainder to micro seconds
+    timestamp += (unsigned long long)timespec.tv_nsec  / 1000ULL;
+
+    return timestamp;
+}
+
 static void obd_callback(struct can_frame * frame)
 {
-    // if(frame->can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
-    // {
-    //     double fl = 0;
-    //     double fr = 0;
-    //     double rl = 0;
-    //     double rr = 0;
+    unsigned long long timestamp = get_timestamp();
 
-    //     (void)get_wheel_speed_front_left(frame, &fl);
-    //     (void)get_wheel_speed_front_right(frame, &fr);
-    //     (void)get_wheel_speed_rear_left(frame, &rl);
-    //     (void)get_wheel_speed_rear_right(frame, &rr);
-
-    //     printf("\n fl: %f -- fr: %f -- rl: %f -- rr: %f \n", fl, fr, rl, rr);
-    // }
-
-    if(frame->can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
+    if(frame->can_id == KIA_SOUL_OBD_WHEEL_SPEED_CAN_ID)
     {
-        double wheel_angle = 0;
-        (void)get_steering_wheel_angle(frame, &wheel_angle);
-        printf("\n steering wheel angle: %f\n", wheel_angle);
+        double fl = 0;
+        double fr = 0;
+        double rl = 0;
+        double rr = 0;
+
+        (void)get_wheel_speed_front_left(frame, &fl);
+        (void)get_wheel_speed_front_right(frame, &fr);
+        (void)get_wheel_speed_rear_left(frame, &rl);
+        (void)get_wheel_speed_rear_right(frame, &rr);
+
+        // RR
+        printf("\n RR: %f \n", fl);
+
+        // LR
+        printf("\n\t\t LR: %f \n", fr);
+
+        // RF
+        printf("\n\t\t\t\t RF: %f \n", rl);
+
+        // LF
+        printf("\n\t\t\t\t\t\t LF: %f \n", rr);
+
+        if(GLOBAL_FILE_POINTER != NULL)
+        {
+            fprintf(GLOBAL_FILE_POINTER, "%llu,%f,%f,%f,%f,", timestamp, fl, fr, rl, rr);
+        }
     }
+
+    // if(frame->can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
+    // {
+    //     double wheel_angle = 0;
+    //     (void)get_steering_wheel_angle(frame, &wheel_angle);
+    //     printf("\n steering wheel angle: %f\n", wheel_angle);
+    // }
 
     // if(frame->can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID)
     // {
@@ -51,6 +88,7 @@ static void obd_callback(struct can_frame * frame)
 
 int main()
 {
+    GLOBAL_FILE_POINTER = fopen("wheel_speed.csv", "w+");
     struct sigaction sig;
     sig.sa_handler = signal_handler;
     sigaction(SIGINT, &sig, NULL);
@@ -65,8 +103,9 @@ int main()
     }
     while(EXIT_SIGNALED == OSCC_OK)
     {
-        (void) usleep(50000);
+        (void) usleep(50);
     }
     oscc_disable();
     oscc_close(channel);
+    fclose(GLOBAL_FILE_POINTER);
 }
