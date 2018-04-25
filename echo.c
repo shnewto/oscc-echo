@@ -53,16 +53,16 @@ static void obd_callback(struct can_frame * frame)
         (void)get_wheel_speed_right_rear(frame, &rr);
 
         // RR
-        printf("\n RR: %f \n", rr);
+        printf("\nRR: %f", rr);
 
         // LR
-        printf("\n\t\t LR: %f \n", lr);
+        printf("\tLR: %f", lr);
 
         // RF
-        printf("\n\t\t\t\t RF: %f \n", rf);
+        printf("\tRF: %f", rf);
 
         // LF
-        printf("\n\t\t\t\t\t\t LF: %f \n", lf);
+        printf("\tLF: %f \n", lf);
 
         if(GLOBAL_FILE_POINTER != NULL)
         {
@@ -70,19 +70,19 @@ static void obd_callback(struct can_frame * frame)
         }
     }
 
-    // if(frame->can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
-    // {
-    //     double wheel_angle = 0;
-    //     (void)get_steering_wheel_angle(frame, &wheel_angle);
-    //     printf("\n steering wheel angle: %f\n", wheel_angle);
-    // }
+    if(frame->can_id == KIA_SOUL_OBD_STEERING_WHEEL_ANGLE_CAN_ID)
+    {
+        double wheel_angle = 0;
+        (void)get_steering_wheel_angle(frame, &wheel_angle);
+        printf("\n steering wheel angle: %f\n", wheel_angle);
+    }
 
-    // if(frame->can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID)
-    // {
-    //     double brake_pressure = 0;
-    //     (void) get_brake_pressure(frame, &brake_pressure);
-    //     printf("\n brake pressure: %f \n", brake_pressure);
-    // }
+    if(frame->can_id == KIA_SOUL_OBD_BRAKE_PRESSURE_CAN_ID)
+    {
+        double brake_pressure = 0;
+        (void) get_brake_pressure(frame, &brake_pressure);
+        printf("\n brake pressure: %f \n", brake_pressure);
+    }
 
 }
 
